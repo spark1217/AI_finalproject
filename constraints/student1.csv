@@ -1,0 +1,16 @@
+﻿Student 1,,,,
+degree,credits_taken,degree_status,min_cs_credits,max_cs_credits
+Undergraduate,16,Freshman,6,9
+,,,,
+course_code,is_taken,course_unit,,
+111,T,3,,
+113,T,3,,
+216,T,3,,
+217,T,1,,
+226,T,3,,
+,,,,
+course_code,is_preferred,course_unit,prereq,is_prereq_satisfied
+236,T,3,230,T
+297-002,T,3,,T
+246,T,3,230,T
+297-001,F,3,,T

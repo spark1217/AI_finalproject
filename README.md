@@ -1,1 +1,2 @@
-# AI_finalproejct
+# AI project
+## Course scheduler
