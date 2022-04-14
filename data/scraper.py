@@ -29,8 +29,11 @@ course_elements = soup.find_all("section", class_="course")
 for course in course_elements:
         course_info = course.find("h1").text.split()
         course_code = course_info[1]
-        course_title = ' '.join(course_info[2:-3])
-        course_units = course_info[-1]
+        ct_temp = course.find("h1").text.split('Units:')[0]
+        course_title = ' '.join(ct_temp.split()[2:])
+        # course_title = ' '.join(course_info[2:-2])
+        # course_units = course_info[-1]
+        course_units = course.find("h1").text.split('Units:')[-1]
 
         course_desc = course.find_all("p")
         description = []

@@ -45,6 +45,6 @@ for i in range(len(data)):
 
 empty_df = empty_df.drop(["Topic", "Notes"], axis = 1).reset_index()
 print(empty_df)
-empty_df.to_csv("data_revised.csv")
+empty_df.to_csv("course_list_csp.csv")
 
 

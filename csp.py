@@ -1,5 +1,6 @@
 import os
 import sys
+import csv
 
 class csp:
     def __init__(self, degree:str, status:str, min_credit:int, max_credit:int, course_taken_unit:list, course_request_unit:list):
@@ -10,7 +11,16 @@ class csp:
         self.course_taken_unit = course_taken_unit
         self.course_request_unit = course_request_unit
         print(degree, status, min_credit, max_credit, course_taken_unit, course_request_unit)
+        
     
+def read_data():
+    courses = []
+    with open('data/course_list_csp.csv','r') as f: 
+        reader = csv.DictReader(f)
+        for row in reader:
+            courses.append(row)
+    return courses
+
 def read_profile(filename):
     file = "constraints/" + filename + '.txt'
     with open(file) as file:
@@ -48,4 +58,6 @@ def read_profile(filename):
 if __name__ == "__main__":
     filename = sys.argv[1]
     degree, status, min_credit, max_credit, course_taken_unit, course_request_unit = read_profile(filename)
+    course_list = read_data()
     csp = csp(degree, status, min_credit, max_credit, course_taken_unit, course_request_unit)
+    
