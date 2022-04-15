@@ -1,63 +1,35 @@
-import os
-import sys
-import csv
-
 class csp:
-    def __init__(self, degree:str, status:str, min_credit:int, max_credit:int, course_taken_unit:list, course_request_unit:list):
+    def __init__(self, degree:str, status:str, min_credit:int, max_credit:int, course_taken_unit:list, course_request_unit:list, course_list:list):
         self.degree = degree
         self.status = status
         self.min_credit = min_credit
         self.max_credit = max_credit
         self.course_taken_unit = course_taken_unit
         self.course_request_unit = course_request_unit
-        print(degree, status, min_credit, max_credit, course_taken_unit, course_request_unit)
+        self.course_list = course_list
+        # print(degree, status, min_credit, max_credit, course_taken_unit, course_request_unit)
         
-    
-def read_data():
-    courses = []
-    with open('data/course_list_csp.csv','r') as f: 
-        reader = csv.DictReader(f)
-        for row in reader:
-            courses.append(row)
-    return courses
+        # list of possible courses
+        possible_courses = csp.add_courses(self)
+        
+    def add_courses(self):
+        # variables: courses, domains: day/time
+        courses = self.course_list[:]
+        
+        n = len(courses)
+        temp = set(range(n))
+        # Remove closed courses (avail_status = 'O')
+        for i in range(n):
+            if courses[i]['avail_status'] != 'O':
+                temp.remove(i)
+                
+        # Remove course_taken
+        taken = [v['taken'] for v in self.course_taken_unit]
+        for j in range(n):
+            if courses[j]['course_code'] in taken:
+                if j in temp:
+                    temp.remove(j)
 
-def read_profile(filename):
-    file = "constraints/" + filename + '.txt'
-    with open(file) as file:
-        profile = file.read().replace('\n',' ').split('#')
-    for i in profile[1:]:
-        temp = i.split(' ')
-        if temp[0] == 'degree':
-            degree = temp[1]
-        elif temp[0] == 'degree_status':
-            status = temp[1]
-        elif temp[0] == 'min_credit':
-            min_credit = temp[1]
-        elif temp[0] == 'max_credit':
-            max_credit = temp[1]
-        elif temp[0] == 'course_taken_unit':
-            course_taken = []
-            for t in temp[1:]:
-                if len(t) > 0:
-                    dic = {}
-                    dic['taken'] = t.split('_')[0]
-                    dic['unit'] = t.split('_')[1]
-                    course_taken.append(dic)
-            course_taken_unit = course_taken
-        elif temp[0] == 'course_request_unit':
-            course_request = []
-            for t in temp[1:]:
-                if len(t) > 0:
-                    dic = {}
-                    dic['request'] = t.split('_')[0]
-                    dic['unit'] = t.split('_')[1]
-                    course_request.append(dic)
-            course_request_unit = course_request
-    return degree, status, min_credit, max_credit, course_taken_unit, course_request_unit
-
-if __name__ == "__main__":
-    filename = sys.argv[1]
-    degree, status, min_credit, max_credit, course_taken_unit, course_request_unit = read_profile(filename)
-    course_list = read_data()
-    csp = csp(degree, status, min_credit, max_credit, course_taken_unit, course_request_unit)
-    
+        possible_courses = [courses[p] for p in temp]
+        return possible_courses
+        

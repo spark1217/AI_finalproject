@@ -2,5 +2,5 @@
 ## Course scheduler  
 
 ### Execution  
-python3 csp.py <filename without filetype>  
-e.g python3 csp.py profile1
+python3 main.py <filename without filetype>  
+e.g python3 main.py profile1  
