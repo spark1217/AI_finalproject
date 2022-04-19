@@ -54,5 +54,9 @@ if __name__ == "__main__":
     course_list = read_data()
     
     # CSP
-    csp.csp(degree, status, min_credit, max_credit, course_taken_unit, course_request_unit, course_list)
-    
+    x = csp.csp(degree, status, min_credit, max_credit, course_taken_unit, course_request_unit, course_list)
+    y = x.csp_backtracking()
+    y
+    z = x.solutions()
+    for i in z:
+        print(i)
