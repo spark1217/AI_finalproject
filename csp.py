@@ -54,35 +54,20 @@ class csp:
 
         return possible_courses
 
-    # def assigning_value(self, course, assignment):
-    #     if "M" in course["day"]:
-    #         assignment["M"].append(course)
-            
-    #     if "T" in course["day"] and course["day"] != "Th":
-    #         assignment["T"].append(course)
-            
-    #     if "W" in course["day"]:
-    #         assignment["W"].append(course)
-            
-    #     if "Th" in course["day"]:
-    #         assignment["Th"].append(course)
-            
-    #     if "F" in course["day"]:
-    #         assignment["F"].append(course)
-
-    #     return assignment
 
     def csp_backtracking(self):
         
         # credit counts
-        global set_solutions
+        global set_solutions, Lablist
         credit_cnt = 0
         set_solutions = []
 
         #The list of possible courses
-
+        global cnt
+        cnt = 0
         credit_cnt = 0
         possible_courses = csp.add_courses(self)
+        Lablist = [lab for lab in possible_courses if lab["component"] == "Lab"]
 
         return csp.backtracking_hard_constraint(self,possible_courses, [], credit_cnt)
 
@@ -119,35 +104,57 @@ class csp:
                     else:
                         templist[index] = int(time[0]) + (int(time[2:4]) / 60)
 
-            if templist[1] >= templist[2] or templist[3] >= templist[0]:
-                return True
+            s_1, e_1, s_2, e_2 = templist[0], templist[1], templist[2], templist[3]
 
+            if s_1 <= s_2 and s_2 <= e_1:
+                return True
+            
+            elif s_1 <= e_2 and e_2 <= e_1:
+                return True
+            
             else:
                 return False
+
         else:
             return False
 
 
 
-    def forwardchecking(self,cur_course, cur_possible_variables, credit):
+    def forwardchecking(self,cur_lec, cur_lab, cur_possible_variables, credit):
 
         "After forward checking.."
         next_possible_variables = copy.deepcopy(cur_possible_variables)
-        next_credit = credit + int(cur_course["course_units"])
+        # next_credit = credit + int(cur_lec["course_units"])
 
-        for variable in cur_possible_variables:
+        next_credit = credit + int(cur_lec["course_units"])
 
-            if next_credit + int(variable["course_units"]) > int(self.max_credit) or csp.isoverlap(self,cur_course, variable) or variable["course_code"] == cur_course["course_code"]:
-                
-                next_possible_variables.remove(variable)
+        if cur_lab == {}:
+            
+            for variable in cur_possible_variables:
+
+                ismorecredit = next_credit + int(variable["course_units"]) > int(self.max_credit) 
+                isoverlap = csp.isoverlap(self,cur_lec, variable)
+                issamecourse = variable["course_code"] == cur_lec["course_code"]
+
+                if ismorecredit or isoverlap or issamecourse:
+                    next_possible_variables.remove(variable)
+
+        else:
+
+            for variable in cur_possible_variables:
+
+                ismorecredit = next_credit + int(variable["course_units"]) > int(self.max_credit) 
+                isoverlap = csp.isoverlap(self,cur_lec, variable)
+                isoverlap_lab = csp.isoverlap(self, cur_lab, variable)
+                issamecourse = variable["course_code"] == cur_lec["course_code"]
+
+                if ismorecredit or isoverlap or isoverlap_lab or issamecourse:
+                    next_possible_variables.remove(variable)
 
         return next_possible_variables
 
 
     def backtracking_hard_constraint(self,possible_variables, assignment, credit):
-
-        # print(possible_variables)
-        #Possible coursee = {M:[....], T: [....], F: [....]}
 
         if csp.isgoal(self,credit) == "Yes":
             new = []
@@ -155,6 +162,7 @@ class csp:
                 new.append((course["course_code"], course["section"]))
             new.sort()
             set_solutions.append(new)
+            print(new)
 
         elif csp.isgoal(self,credit) == "No":
             pass
@@ -165,61 +173,72 @@ class csp:
                 new.append((course["course_code"], course["section"]))
             new.sort()
             set_solutions.append(new)
-            pass
+            print(new)
 
 
         if possible_variables == []:
 
             return "failure"
 
+
         else:
         
             possible_Lec_list = [lec for lec in possible_variables if lec["component"] == "Lec"]
 
+            visited_lec_list = copy.deepcopy(possible_Lec_list)
+
+
             for lec in possible_Lec_list:
 
-                Lablist = [x for x in possible_variables if x["course_code"] == lec["course_code"] and x["component"] == "Lab"]
+                if lec in visited_lec_list:
 
-                if Lablist != []:
+                    visited_lec_list.remove(lec)
 
-                    for lab in Lablist:
+                    possible_Lablist = [x for x in possible_variables if x["course_code"] == lec["course_code"] and x["component"] == "Lab"]
 
-                        x = csp.forwardchecking(self, lec, possible_variables, credit)
+                    if possible_Lablist != []:
 
-                        if x!= []:
-                            temp_credit = credit + int(lec["course_units"])
-                            y = csp.forwardchecking(self, lab, x, temp_credit)
+                        for lab in possible_Lablist:
+
+                            x = csp.forwardchecking(self, lec, lab, possible_variables, credit)
+                        
                             assignment.append(lec)
                             assignment.append(lab)
-                            credit += (int(lec["course_units"]) + int(lab["course_units"])) 
+                            credit += int(lec["course_units"])
+
                             result = csp.backtracking_hard_constraint(self, x, assignment, credit)
 
                             if result != "failure":
-                                    return result
+                                return result
 
                             assignment.remove(lec)
                             assignment.remove(lab)
-                            credit -= (int(lec["course_units"]) + int(lab["course_units"])) 
+                            credit -= int(lec["course_units"])
+
+                    else:
+                        possible = True
+
+                        for lab in Lablist:
+                            if lab["course_code"] == lec["course_code"]:
+                                possible = False
+                            
+                            
+                        if possible:
+
+                            x = csp.forwardchecking(self, lec, {}, visited_lec_list, credit)
+
+                            assignment.append(lec)
+                            credit += (int(lec["course_units"]))
+
+                            result = csp.backtracking_hard_constraint(self, x, assignment, credit)
+
+                            if result != "failure":
+                                return result
+
+                            assignment.remove(lec)
+                            credit -= (int(lec["course_units"]))
 
                 else:
-                    x = csp.forwardchecking(self, lec, possible_variables, credit)
-
-                    assignment.append(lec)
-                    credit += (int(lec["course_units"]))
-
-                    result = csp.backtracking_hard_constraint(self, x, assignment, credit)
-                    if result != "failure":
-                        return result
-
-                    assignment.remove(lec)
-                    credit -= (int(lec["course_units"]))
-
+                    pass
 
         return "failure"
-
-    def solutions(self):
-        result = []
-        for value in set_solutions:
-            if value not in result:
-                result.append(value)
-        return result

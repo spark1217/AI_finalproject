@@ -55,8 +55,9 @@ if __name__ == "__main__":
     
     # CSP
     x = csp.csp(degree, status, min_credit, max_credit, course_taken_unit, course_request_unit, course_list)
+    
+    dir_name = os.getcwd()
+    sys.stdout = open(dir_name+"\\"+"solutions.txt", "w")
+    
     y = x.csp_backtracking()
-    y
-    z = x.solutions()
-    for i in z:
-        print(i)
+    sys.stdout.close()
