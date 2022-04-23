@@ -10,10 +10,9 @@ class csp:
         self.course_taken_unit = course_taken_unit
         self.course_request_unit = course_request_unit
         self.course_list = course_list
-        # print(degree, status, min_credit, max_credit, course_taken_unit, course_request_unit)
 
     def add_courses(self):
-        # variables: courses, domains: day/time
+        # variables: courses, domains: Taken or Not taken
         courses = self.course_list[:]
         
         n = len(courses)
@@ -37,12 +36,14 @@ class csp:
                     temp.remove(k)
 
         # Remove course followed by degree
+        # Undergraduate student cannot take courses which are over or equal to 500.
         if self.degree == "Undergraduate":
             for l in range(n):
                 if int(courses[l]["course_code"][0]) > 4:
                     if l in temp:
                         temp.remove(l)
-                
+
+        # Graduate student cannot take courses which are less than 500.
         elif self.degree == "Graduate":
             for l in range(n):
                 if int(courses[l]["course_code"][0]) < 5:
@@ -57,35 +58,36 @@ class csp:
 
     def csp_backtracking(self):
         
-        # credit counts
         global set_solutions, Lablist
-        credit_cnt = 0
-        set_solutions = []
 
-        #The list of possible courses
-        global cnt
-        cnt = 0
-        credit_cnt = 0
-        possible_courses = csp.add_courses(self)
-        Lablist = [lab for lab in possible_courses if lab["component"] == "Lab"]
+        set_solutions = [] #List of available schedule which are consistent with all constraints
+
+        credit_cnt = 0 #Number of credits
+
+        possible_courses = csp.add_courses(self) #Possible courses which are only filtered by students profile so far. 
+
+        Lablist = [lab for lab in possible_courses if lab["component"] == "Lab"] #The courses which also contain laboratory attendance. 
 
         return csp.backtracking_hard_constraint(self,possible_courses, [], credit_cnt)
 
     def isgoal(self, credit):
 
-        if credit >= int(self.min_credit) and credit <= int(self.max_credit):
-
-            if credit + 3 <= int(self.max_credit):
-                return "Continue"
-
-            else:
-                return "Yes"
+        #Check whether the current assignment is our goal.
+        # min_credit < assignment_credit < max_credit
+        if credit >= int(self.min_credit) and credit <= int(self.max_credit):  
+            return "Yes"
 
         else:
             return "No"
 
     def isoverlap(self,course_1, course_2):
 
+        # One of the hard constraints is whether the class time of each courses are overlapped
+        # Check whether there is an overlap in diffrent courses.
+        
+        # If the "day" of two courses are same,
+        #   Convert the expression of "time" from original expression to float expression.
+        #   e.g. AM 10:30 -> 10.5 // PM 02:15 => 14.25 
         if course_1["day"] in course_2["day"] or course_2["day"] in course_1["day"]:
         
             templist = [course_1["start_time"], course_1["end_time"],course_2["start_time"], course_2["end_time"]]
@@ -106,12 +108,22 @@ class csp:
 
             s_1, e_1, s_2, e_2 = templist[0], templist[1], templist[2], templist[3]
 
+            #If start time of course 1 <= start time of course 2 <= end time of course 1, two courses are overlapped.
             if s_1 <= s_2 and s_2 <= e_1:
                 return True
             
+            #Or start time of course 1 <= end time of course 2 <= end time of course 1, two courses are overlapped.
             elif s_1 <= e_2 and e_2 <= e_1:
                 return True
-            
+
+            #Or start time of course 2 <= start time of course 1 <= end time of course 2, two courses are overlapped.
+            elif s_2 <= s_1 and s_1 <= e_2:
+                return True
+
+            #Or start time of course 2 <= end time of course 1 <= end time of course 2, two courses are overlapped.
+            elif s_2 <= e_1 and e_1 <= e_2:
+                return True
+
             else:
                 return False
 
@@ -122,12 +134,23 @@ class csp:
 
     def forwardchecking(self,cur_lec, cur_lab, cur_possible_variables, credit):
 
-        "After forward checking.."
+        #Variable : Course / Domain : Taken or Not taken
+
+        #Constraints
+        # 1) Less than max_credit 
+        # 2) The courses should not be overlapped 
+        # 3) The course code of each courses should be different.(except laboratory course)
+
+        #If a variable(course) cannot satisfy all of the constraints,
+        #   The variable is "Not taken."   
+        #   The variable is removed in the list of "next possible variables."
+        
         next_possible_variables = copy.deepcopy(cur_possible_variables)
-        # next_credit = credit + int(cur_lec["course_units"])
 
         next_credit = credit + int(cur_lec["course_units"])
 
+
+        #If the current considered course does not contain "lab", Only 3 constraints are considered.
         if cur_lab == {}:
             
             for variable in cur_possible_variables:
@@ -139,6 +162,8 @@ class csp:
                 if ismorecredit or isoverlap or issamecourse:
                     next_possible_variables.remove(variable)
 
+        #Else, the current considered course contain "lab", 
+        # Only 4 constraints("lab" course also should not be overlapped with other courses) are considered.
         else:
 
             for variable in cur_possible_variables:
@@ -156,43 +181,65 @@ class csp:
 
     def backtracking_hard_constraint(self,possible_variables, assignment, credit):
 
+        # If the current assignment is goal, the goal is added in list of solutions. Else, just pass.
+        # There is no return as there are possibilities that more courses can be added.
         if csp.isgoal(self,credit) == "Yes":
+
             new = []
+        
             for course in assignment:
                 new.append((course["course_code"], course["section"]))
-            new.sort()
-            set_solutions.append(new)
+
+            # new.sort()
+            set_solutions.append(list(assignment))
             print(new)
 
         elif csp.isgoal(self,credit) == "No":
             pass
 
-        elif csp.isgoal(self,credit) == "Continue":
-            new = []
-            for course in assignment:
-                new.append((course["course_code"], course["section"]))
-            new.sort()
-            set_solutions.append(new)
-            print(new)
-
-
+        
+        #Return "failure" if there are no possible variables.
         if possible_variables == []:
-
             return "failure"
 
-
         else:
-        
+            """
+            1. Simple background of Backtracking in problem.
+
+            For var in variables:
+                   ** there are just 2 values, No need to use "Order-Domain-Values
+               Next possible variables = Forwardchecking(var = taken, possible variables)
+                   **In Forwardchecking, if a specific variable in possible variables are assigned as "Not taken"
+                     The variable cannot be in the list of next possible variable as the variable is no more considered.
+               result <- backtracking(var = taken | Assignment, next possible values)
+
+
+            2. Procedure of backtracking in problem.
+
+            For "lecture" in "possible lecture list"
+
+               If the lecture is in  "non_visited lecture list"
+
+                   Remove the lecture in "non_visited lecture list"
+
+                   If the lecture should be with lab attendance
+
+                       Next possible variables = Reduced variables using forwardchecking with assignment containing "lecture" and "lab"
+                       Backtracking with Next possible variables
+
+                   Else 
+                       Next possible variables = Reduced variables using forwardchecking with assignment containing "lecture" 
+                       Backtracking with next possible variables"""
+
             possible_Lec_list = [lec for lec in possible_variables if lec["component"] == "Lec"]
 
-            visited_lec_list = copy.deepcopy(possible_Lec_list)
-
+            non_visited_lec_list = copy.deepcopy(possible_Lec_list)
 
             for lec in possible_Lec_list:
 
-                if lec in visited_lec_list:
+                if lec in non_visited_lec_list:
 
-                    visited_lec_list.remove(lec)
+                    non_visited_lec_list.remove(lec)
 
                     possible_Lablist = [x for x in possible_variables if x["course_code"] == lec["course_code"] and x["component"] == "Lab"]
 
@@ -225,7 +272,7 @@ class csp:
                             
                         if possible:
 
-                            x = csp.forwardchecking(self, lec, {}, visited_lec_list, credit)
+                            x = csp.forwardchecking(self, lec, {}, non_visited_lec_list, credit)
 
                             assignment.append(lec)
                             credit += (int(lec["course_units"]))
@@ -242,3 +289,11 @@ class csp:
                     pass
 
         return "failure"
+
+    
+    #The entire set of solutions(Raw version)
+    # [[{course data}, {course data}] , [{course data}, {course data}, {course data}]........]
+    #   -----------------------------   =============================================
+    #           SOLUTION 1                                SOLUTION 2                 ........
+    def hard_constraint_solutions(self):
+        return set_solutions

@@ -54,10 +54,13 @@ if __name__ == "__main__":
     course_list = read_data()
     
     # CSP
-    x = csp.csp(degree, status, min_credit, max_credit, course_taken_unit, course_request_unit, course_list)
+    CSP = csp.csp(degree, status, min_credit, max_credit, course_taken_unit, course_request_unit, course_list)
     
+    #Process for saving the solutions as txt file(solutions.txt)
+    #Solution : All available schedule lists which are consistent with all constraints.
     dir_name = os.getcwd()
-    sys.stdout = open(dir_name+"\\"+"solutions.txt", "w")
-    
-    y = x.csp_backtracking()
+    sys.stdout = open(dir_name+"\\"+"solutions_"+filename+".txt", "w")
+    CSP.csp_backtracking()
+
+    #CSP.hard_constraint_solutions() 
     sys.stdout.close()
