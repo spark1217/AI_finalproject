@@ -190,8 +190,9 @@ class csp:
             for course in assignment:
                 new.append((course["course_code"], course["section"]))
             # new.sort()
-            set_solutions.append(list(assignment))
-            print(new)
+
+            # set_solutions.append(list(assignment))
+            set_solutions.append(new)
 
         elif csp.isgoal(self,credit) == "No":
             pass
@@ -298,6 +299,7 @@ class csp:
         return set_solutions
 
 
+    
     # Filter out soft constraints
     def soft_constraints(self):
         # global possible_solution
@@ -335,9 +337,9 @@ class csp:
                             count_matching -= 100                               # If there is a course that a student doesn't want to take it, calculate as -100
                         else:
                             count_matching += requested_preference[idx_s2]
-                i[-1] = count_matching
+                i.append(count_matching)
 
-        possible_solution.sort(key = lambda x: x[-1], reverse=True)
+        possible_solution.sort(key = lambda x: x[-1], reverse=False)
         # print(possible_solution)
         self.maximize_soft_constraints(possible_solution)
         

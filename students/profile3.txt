@@ -8,7 +8,7 @@ Doctorate
 9
 
 #max_credit
-12
+9
 
 #course_taken_unit
 503_3

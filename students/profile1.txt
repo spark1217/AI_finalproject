@@ -5,7 +5,7 @@ Undergraduate
 Freshman
 
 #min_credit
-6
+9
 
 #max_credit
 9
