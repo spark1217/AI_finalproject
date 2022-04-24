@@ -155,14 +155,14 @@ class csp:
 
 
     def backtracking_hard_constraint(self,possible_variables, assignment, credit):
-
+        
         if csp.isgoal(self,credit) == "Yes":
             new = []
             for course in assignment:
                 new.append((course["course_code"], course["section"]))
             new.sort()
             set_solutions.append(new)
-            print(new)
+            # print(new)
 
         elif csp.isgoal(self,credit) == "No":
             pass
@@ -173,7 +173,7 @@ class csp:
                 new.append((course["course_code"], course["section"]))
             new.sort()
             set_solutions.append(new)
-            print(new)
+            # print(new)
 
 
         if possible_variables == []:
@@ -242,3 +242,84 @@ class csp:
                     pass
 
         return "failure"
+
+    
+    # Filter out soft constraints
+    def soft_constraints(self):
+        # global possible_solution
+        possible_solution = set_solutions[::]
+        c = []
+        for k in self.course_request_unit:
+            temp = k['request'].split('-')
+            if len(temp) > 1:
+                c.append((temp[0], int(temp[1]), k['preference']))
+            else:
+                c.append((temp[0], -1, k['preference']))                     # -1 is a placeholder of section num when it is unknown in requests.
+        
+        requested_course = list(map(list, zip(*c)))[0]
+        requested_section = list(map(list, zip(*c)))[1]
+        requested_preference = list(map(list, zip(*c)))[2]
+        
+        year = self.status
+
+        # calculating weights depending on how many courses in possible solutions are matching with lists in requests
+        for i in possible_solution:
+            temp_course = list(map(list, zip(*i)))[0]
+            temp_sec = list(map(list, zip(*i)))[1]
+            if temp_course == requested_course:
+                i[-1] = len(temp) + sum(requested_preference)
+            else:
+                a = set(requested_course).intersection(set(temp_course))
+                count_matching = len(a)
+                for c in a:
+                    idx_s1 = temp_course.index(c)
+                    idx_s2 = requested_course.index(c)
+                    if requested_section[idx_s2] != -1 and temp_sec[idx_s1] != requested_section[idx_s2]:
+                        count_matching -= 1
+                    else:
+                        if requested_preference[idx_s2] < 0:
+                            count_matching -= 100                               # If there is a course that a student doesn't want to take it, calculate as -100
+                        else:
+                            count_matching += requested_preference[idx_s2]
+                i[-1] = count_matching
+
+        possible_solution.sort(key = lambda x: x[-1], reverse=True)
+        # print(possible_solution)
+        self.maximize_soft_constraints(possible_solution)
+        
+    
+
+    def status_checking(self, x):
+        # Check academic status. If a student is on a certain academic level, he/she should not take lower level courses.
+        year = self.status
+        min_course = 0
+        max_course = 0
+        checking = True
+        if year == 'Freshman' or year == 'Sophomore':
+            min_course = 100
+            max_course = 300
+        elif year == 'Junior' or year == 'Senior':
+            min_course = 200
+            max_course = 500
+        elif year == 'Masters' or year == 'Doctorate':
+            min_course = 500
+            max_course = 900
+
+        c_temp = [int(i) for i in list(map(list, zip(*x)))[0]]
+        if max(c_temp) < min_course:
+            checking = False
+        elif min(c_temp) < min_course and max(c_temp) < max_course:
+            checking = False
+        elif min(c_temp) < max_course and max(c_temp) > max_course:
+            checking = False
+        elif min(c_temp) > max_course:
+            checking = False
+        return checking
+
+    # Find solutions with maximum number of soft constraints
+    def maximize_soft_constraints(self, possible_solution):
+        solution = [x for x in possible_solution if x[-1]> 0 and self.status_checking(x[:-1])]
+        print(solution)
+        print(len(solution))
+        
+        return [x for x in possible_solution if x[-1]> 0 and self.status_checking(x[:-1])]

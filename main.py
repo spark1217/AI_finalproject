@@ -44,6 +44,7 @@ def read_profile(filename):
                     dic = {}
                     dic['request'] = t.split('_')[0]
                     dic['unit'] = t.split('_')[1]
+                    dic['preference'] = int(t.split('_')[2])
                     course_request.append(dic)
             course_request_unit = course_request
     return degree, status, min_credit, max_credit, course_taken_unit, course_request_unit
@@ -57,7 +58,9 @@ if __name__ == "__main__":
     x = csp.csp(degree, status, min_credit, max_credit, course_taken_unit, course_request_unit, course_list)
     
     dir_name = os.getcwd()
-    sys.stdout = open(dir_name+"\\"+"solutions.txt", "w")
+    # sys.stdout = open(dir_name+"\\"+"solutions.txt", "w")
     
     y = x.csp_backtracking()
-    sys.stdout.close()
+
+    z = x.soft_constraints()
+    # sys.stdout.close()
