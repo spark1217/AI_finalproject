@@ -33,9 +33,10 @@ def read_profile(filename):
             for t in temp[1:]:
                 if len(t) > 0:
                     dic = {}
-                    dic['taken'] = t.split('_')[0]
+                    dic['request'] = t.split('_')[0]
                     dic['unit'] = t.split('_')[1]
-                    course_taken.append(dic)
+                    dic['preference'] = int(t.split('_')[2])
+                    course_request.append(dic)
             course_taken_unit = course_taken
         elif temp[0] == 'course_request_unit':
             course_request = []
@@ -55,9 +56,12 @@ if __name__ == "__main__":
     course_list = read_data()
     
     # CSP
-    x = csp.csp(degree, status, min_credit, max_credit, course_taken_unit, course_request_unit, course_list)
+    CSP = csp.csp(degree, status, min_credit, max_credit, course_taken_unit, course_request_unit, course_list)
     
+    #Process for saving the solutions as txt file(solutions.txt)
+    #Solution : All available schedule lists which are consistent with all constraints.
     dir_name = os.getcwd()
+
     # sys.stdout = open(dir_name+"\\"+"solutions.txt", "w")
     
     y = x.csp_backtracking()
