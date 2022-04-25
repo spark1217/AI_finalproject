@@ -315,9 +315,6 @@ class csp:
         requested_course = list(map(list, zip(*c)))[0]
         requested_section = list(map(list, zip(*c)))[1]
         requested_preference = list(map(list, zip(*c)))[2]
-        print(requested_course)
-        print(requested_section)
-        print(requested_preference)
         year = self.status
 
         # calculating weights depending on how many courses in possible solutions are matching with lists in requests
@@ -325,12 +322,10 @@ class csp:
             temp_course = list(map(list, zip(*i)))[0]
             temp_sec = list(map(list, zip(*i)))[1]
             if temp_course == requested_course:
-                i[-1] = len(temp) + sum(requested_preference)
+                i.append(len(temp) + sum(requested_preference))
             else:
                 a = set(requested_course).intersection(set(temp_course))
                 count_matching = len(a)
-                # if len(a) > 1:
-                #     print(a, temp_course, temp_sec, requested_course, requested_section)
                 for c in a:
                     idx_s1 = temp_course.index(c)
                     idx_s2 = requested_course.index(c)
@@ -338,7 +333,7 @@ class csp:
                         count_matching -= 1
                     else:
                         if requested_preference[idx_s2] < 0:
-                            count_matching -= 100                               # If there is a course that a student doesn't want to take it, calculate as -100
+                            count_matching -= 100                               # If there is a course that a student doesn't want to take it, calculate as -100 (consider ignoring)
                         else:
                             count_matching += requested_preference[idx_s2]
                 i.append(count_matching)
@@ -382,7 +377,7 @@ class csp:
     # Find solutions with maximum number of soft constraints
     def maximize_soft_constraints(self, possible_solution):
         solution = [x for x in possible_solution if x[-1]> 0 and self.status_checking(x[:-1])]
-        print(solution)
+        print(solution[:5])
         # print(len(solution))
         
         return [x for x in possible_solution if x[-1]> 0 and self.status_checking(x[:-1])]
