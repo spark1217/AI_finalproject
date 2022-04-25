@@ -326,10 +326,10 @@ class csp:
             else:
                 a = set(requested_course).intersection(set(temp_course))
                 count_matching = len(a)
-                for c in a:
+                for c in a: 
                     idx_s1 = temp_course.index(c)
                     idx_s2 = requested_course.index(c)
-                    if requested_section[idx_s2] != -1 and temp_sec[idx_s1] != requested_section[idx_s2]:
+                    if requested_section[idx_s2] != -1 and int(temp_sec[idx_s1]) != requested_section[idx_s2]:
                         count_matching -= 1
                     else:
                         if requested_preference[idx_s2] < 0:
@@ -337,8 +337,9 @@ class csp:
                         else:
                             count_matching += requested_preference[idx_s2]
                 i.append(count_matching)
+                count_matching = 0
 
-        possible_solution.sort(key = lambda x: x[-1], reverse=False)
+        possible_solution.sort(key = lambda x: x[-1], reverse=True)
         # print(possible_solution)
         self.maximize_soft_constraints(possible_solution)
         
