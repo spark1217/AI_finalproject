@@ -2,7 +2,7 @@ import copy
 
 
 class csp:
-    def __init__(self, degree:str, status:str, min_credit:int, max_credit:int, course_taken_unit:list, course_request_unit:list, course_list:list):
+    def __init__(self, degree:str, status:str, min_credit:int, max_credit:int, course_taken_unit:list, course_request_unit:list, course_list:list, day_preference:dict):
         self.degree = degree
         self.status = status
         self.min_credit = min_credit
@@ -10,6 +10,7 @@ class csp:
         self.course_taken_unit = course_taken_unit
         self.course_request_unit = course_request_unit
         self.course_list = course_list
+        self.day_preference = day_preference
 
     def add_courses(self):
         # variables: courses, domains: Taken or Not taken
@@ -188,7 +189,7 @@ class csp:
             new = []
         
             for course in assignment:
-                new.append((course["course_code"], course["section"]))
+                new.append((course["course_code"], course["section"], course["day"]))
             # new.sort()
 
             # set_solutions.append(list(assignment))
@@ -304,6 +305,8 @@ class csp:
     def soft_constraints(self):
         # global possible_solution
         possible_solution = set_solutions[::]
+
+        
         c = []
         for k in self.course_request_unit:
             temp = k['request'].split('-')
@@ -319,10 +322,17 @@ class csp:
 
         # calculating weights depending on how many courses in possible solutions are matching with lists in requests
         for i in possible_solution:
+            #Calculating day_weight
+            day_weight = self.cal_day_weight(i)
+            
+            #Calculating course preference
             temp_course = list(map(list, zip(*i)))[0]
             temp_sec = list(map(list, zip(*i)))[1]
+            
             if temp_course == requested_course:
-                i.append(len(temp) + sum(requested_preference))
+                # count_matching = calculating course preference, day_weight = calculating day preference
+                # final_weight = count_matching * 0.5 + day_weight * 0.5
+                i.append((len(temp) + sum(requested_preference))*0.6 + day_weight*0.4)
             else:
                 a = set(requested_course).intersection(set(temp_course))
                 count_matching = len(a)
@@ -336,8 +346,12 @@ class csp:
                             count_matching -= 100                               # If there is a course that a student doesn't want to take it, calculate as -100 (consider ignoring)
                         else:
                             count_matching += requested_preference[idx_s2]
-                i.append(count_matching)
+
+                # count_matching = calculating course preference, day_weight = calculating day preference
+                # final_weight = count_matching * 0.6 + day_weight * 0.4
+                i.append(count_matching*0.6 + day_weight*0.4)
                 count_matching = 0
+                day_weight = 0
 
         possible_solution.sort(key = lambda x: x[-1], reverse=True)
         # print(possible_solution)
@@ -375,10 +389,25 @@ class csp:
             checking = False
         return checking
 
+
+    def cal_day_weight(self, s):
+        day_pref = self.day_preference
+        day = []
+        day_weight = 0
+        # if day_pref = 1, add 1. if day_pref = 0, add -100
+        for d in s:
+            day.extend(d[2].upper().split('/'))
+        for i in day:
+            if day_pref[i] == 1:
+                day_weight += 1
+            else:
+                day_weight -= 100
+        return day_weight
+
     # Find solutions with maximum number of soft constraints
     def maximize_soft_constraints(self, possible_solution):
         solution = [x for x in possible_solution if x[-1]> 0 and self.status_checking(x[:-1])]
-        print(solution[:5])
-        # print(len(solution))
+        print(solution)
+        print(len(solution))
         
         return [x for x in possible_solution if x[-1]> 0 and self.status_checking(x[:-1])]

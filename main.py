@@ -47,16 +47,26 @@ def read_profile(filename):
                     dic['preference'] = int(t.split('_')[2])
                     course_request.append(dic)
             course_request_unit = course_request
-    return degree, status, min_credit, max_credit, course_taken_unit, course_request_unit
+        elif temp[0] == 'day_preference':
+            day_prefer = {}
+            for d in temp[1:]:
+                if len(d) > 0:
+                    day = {}
+                    date = d.split('_')[0]
+                    is_pref = d.split('_')[1]
+                    day[date] = int(is_pref)
+                    day_prefer.update(day)
+            day_preference = day_prefer
+    return degree, status, min_credit, max_credit, course_taken_unit, course_request_unit, day_preference
 
 
 if __name__ == "__main__":
     filename = sys.argv[1]
-    degree, status, min_credit, max_credit, course_taken_unit, course_request_unit = read_profile(filename)
+    degree, status, min_credit, max_credit, course_taken_unit, course_request_unit, day_preference = read_profile(filename)
     course_list = read_data()
     
     # CSP
-    CSP = csp.csp(degree, status, min_credit, max_credit, course_taken_unit, course_request_unit, course_list)
+    CSP = csp.csp(degree, status, min_credit, max_credit, course_taken_unit, course_request_unit, course_list, day_preference)
     
     #Process for saving the solutions as txt file(solutions.txt)
     #Solution : All available schedule lists which are consistent with all constraints.

@@ -26,3 +26,11 @@ Doctorate
 890_3_1
 581_3_-1
 517_3_-1
+
+
+#day_preference
+M_1
+T_1
+W_0
+TH_1
+F_0
