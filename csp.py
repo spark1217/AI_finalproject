@@ -315,7 +315,9 @@ class csp:
         requested_course = list(map(list, zip(*c)))[0]
         requested_section = list(map(list, zip(*c)))[1]
         requested_preference = list(map(list, zip(*c)))[2]
-        
+        print(requested_course)
+        print(requested_section)
+        print(requested_preference)
         year = self.status
 
         # calculating weights depending on how many courses in possible solutions are matching with lists in requests
@@ -327,6 +329,8 @@ class csp:
             else:
                 a = set(requested_course).intersection(set(temp_course))
                 count_matching = len(a)
+                # if len(a) > 1:
+                #     print(a, temp_course, temp_sec, requested_course, requested_section)
                 for c in a:
                     idx_s1 = temp_course.index(c)
                     idx_s2 = requested_course.index(c)
@@ -354,8 +358,11 @@ class csp:
         if year == 'Freshman' or year == 'Sophomore':
             min_course = 100
             max_course = 300
-        elif year == 'Junior' or year == 'Senior':
+        elif year == 'Junior':
             min_course = 200
+            max_course = 500
+        elif year == 'Senior':
+            min_course = 300
             max_course = 500
         elif year == 'Masters' or year == 'Doctorate':
             min_course = 500
@@ -376,6 +383,6 @@ class csp:
     def maximize_soft_constraints(self, possible_solution):
         solution = [x for x in possible_solution if x[-1]> 0 and self.status_checking(x[:-1])]
         print(solution)
-        print(len(solution))
+        # print(len(solution))
         
         return [x for x in possible_solution if x[-1]> 0 and self.status_checking(x[:-1])]
