@@ -1,4 +1,7 @@
 import copy
+from operator import index
+import yaml
+import os
 
 
 class csp:
@@ -406,8 +409,82 @@ class csp:
 
     # Find solutions with maximum number of soft constraints
     def maximize_soft_constraints(self, possible_solution):
+        global solution
         solution = [x for x in possible_solution if x[-1]> 0 and self.status_checking(x[:-1])]
+
+        # max = solution[0][-1]
+        # cnt = 0
+        # for i in solution:
+        #     if i[-1] != max:
+        #         break
+        #     else:
+        #         cnt+= 1
+        #         print(i)
+        # print(cnt)
         print(solution)
         print(len(solution))
         
         return [x for x in possible_solution if x[-1]> 0 and self.status_checking(x[:-1])]
+
+    def timetable(self):
+        k = solution
+        course_list = csp.add_courses(self)
+        time_table_info = []
+
+        #Filtering information in solutions satisfying hard/soft constraint 
+        #This is for visualization
+
+        for a_solution in k:
+
+            temp_list =[]
+
+            for course in a_solution:
+
+                if type(course) == float:
+                    break
+
+                course_code = course[0]
+                course_section = course[1]
+                course_day = course[2]
+
+                for possible_course in course_list:
+                    if possible_course["course_code"] == course_code and possible_course["section"] == course_section:
+                        temp = possible_course
+
+                dic = {}
+                dic["name"] = temp["course_title"] +"(" +temp["component"] +")"
+
+                dic["days"] = course_day
+                time_list = [temp["start_time"], temp["end_time"]]
+
+                for index, time in enumerate(time_list):
+                    if len(time) == 8:
+                        if "PM" in time and "12" not in time:
+                            time_list[index] = str(int(time[0:2]) + 12) + time[2:5]
+                        else:
+                            time_list[index] = str(int(time[0:2])) + time[2:5]
+                    else:
+                        if "PM" in time and "12" not in time:
+                            time_list[index] = str(int(time[0]) + 12) + time[1:4]
+                        else:
+                            time_list[index] = str(int(time[0])) + time[1:4]
+
+                dic["time"] = time_list[0] + " - " + time_list[1]
+                temp_list.append(dic)
+                  
+            time_table_info.append(temp_list)
+
+        # print(time_table_info)
+        # print(len(time_table_info))
+        return time_table_info 
+
+    def yml(self,timetable):
+
+        dict_file = timetable[0]
+        dir_name = os.getcwd()
+
+        for index, dict_file in enumerate(timetable):
+            with open(dir_name +"\\new"+str(index)+".yml", 'w') as file:
+                documents = yaml.dump(dict_file, file)
+            if index == 4:
+                break

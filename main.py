@@ -72,8 +72,9 @@ if __name__ == "__main__":
     #Solution : All available schedule lists which are consistent with all constraints.
     dir_name = os.getcwd()
 
-    # sys.stdout = open(dir_name+"\\"+"solutions_"+filename+".txt", "w")
     CSP.csp_backtracking()
-
+    # sys.stdout = open(dir_name+"\\"+"solutions_"+filename+".txt", "w")
     z = CSP.soft_constraints()
+    w = CSP.timetable()
+    CSP.yml(w)
     # sys.stdout.close()
