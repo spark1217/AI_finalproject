@@ -77,4 +77,10 @@ if __name__ == "__main__":
     z = CSP.soft_constraints()
     w = CSP.timetable()
     CSP.yml(w)
+
     # sys.stdout.close()
+
+    # Generate pdf files for solutions
+    for i in range(5):
+        cmd = "pdfschedule "+"new"+str(i)+".yml"
+        os.system(cmd)
