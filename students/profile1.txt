@@ -24,7 +24,7 @@ Freshman
 
 #day_preference
 M_1
-T_1
+T_0
 W_1
 TH_1
-F_0
+F_1
