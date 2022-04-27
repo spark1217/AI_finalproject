@@ -1,18 +1,9 @@
-- days: T/Th
-  name: Computer Organization and Assembly Language for Computer Scientists(Lec)
-  time: 16:30 - 17:45
 - days: M/W
-  name: Introduction to Numerical Methods(Lec)
-  time: 8:30 - 9:45
+  name: Introduction to Computing - Java(Lec)
+  time: 8:30 - 10:20
 - days: M/W
-  name: Data Structures and Algorithms(Lec)
-  time: 10:15 - 11:30
-- days: M/W
-  name: Data and Computer Communications Networks(Lec)
+  name: C and Software Tools(Lec)
   time: 15:00 - 16:15
-- days: M/W
-  name: Introduction to Artificial Intelligence(Lec)
-  time: 16:30 - 17:45
-- days: M/W
-  name: Software Security(Lec)
-  time: 13:30 - 14:45
+- days: M
+  name: Special Topics in Computer Science(Lec)
+  time: 17:20 - 19:10
